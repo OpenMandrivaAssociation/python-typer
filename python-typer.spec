@@ -9,7 +9,7 @@
 
 Name:		python-typer
 Version:	0.15.2
-Release:	1
+Release:	2
 Summary:	Typer, build great CLIs. Easy to code. Based on Python type hints
 URL:		https://pypi.org/project/typer/
 License:	MIT
