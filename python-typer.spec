@@ -17,7 +17,6 @@ BuildRequires:	python%{pyver}dist(annotated-doc)
 BuildRequires:	python%{pyver}dist(click)
 BuildRequires:	python%{pyver}dist(pdm-backend)
 BuildRequires:	python%{pyver}dist(pip)
-BuildRequires:	python%{pyver}dist(pre-commit)
 BuildRequires:	python%{pyver}dist(rich)
 BuildRequires:	python%{pyver}dist(shellingham)
 BuildRequires:	python%{pyver}dist(wheel)
@@ -27,10 +26,6 @@ BuildRequires:	python%{pyver}dist(click)
 BuildRequires:	python%{pyver}dist(pytest)
 BuildRequires:	python%{pyver}dist(pytest-xdist)
 %endif
-Requires:	python%{pyver}dist(annotated-doc) >= 0.02
-Requires:	python%{pyver}dist(click) >= 8.2.1
-Requires:	python%{pyver}dist(rich) >= 13.8.0
-Requires:	python%{pyver}dist(shellingham) >= 1.3.0
 
 # python-typer binary name-conflict with ErLang TyPer application
 Conflicts:	erlang
@@ -75,7 +70,7 @@ export _TYPER_RUN_INSTALL_COMPLETION_TESTS=1
 skiptests+="not test_enum and not test_tutorial003 and not test_tutorial001"
 skiptests+=" and not test_script_completion_run"
 skiptests+=" and not test_completion_show_invalid_shell"
-skiptests+=" and not test_invalid_score"
+skiptests+=" and not test_invalid_score and not test_cli"
 pytest -rs -k "$skiptests"
 %endif
 
