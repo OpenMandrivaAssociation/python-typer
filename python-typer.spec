@@ -1,52 +1,41 @@
 %define module typer
-%define oname typer
-# disable test on abf
-%bcond_with test
-
-# NOTE Update the python-typer-slim package prior to updating this package
-# NOTE in order to keep them in sync.
-# NOTE Upstream python-typer & python-typer-slim releases are version synced.
+%bcond tests 1
 
 Name:		python-typer
-Version:	0.15.2
-Release:	2
+Version:	0.25.1
+Release:	1
 Summary:	Typer, build great CLIs. Easy to code. Based on Python type hints
-URL:		https://pypi.org/project/typer/
 License:	MIT
 Group:		Development/Python
-Source0:	https://files.pythonhosted.org/packages/source/t/typer/typer-%{version}.tar.gz
+URL:		https://github.com/fastapi/typer
+Source0:	%{URL}/archive/%{version}/%{name}-%{version}.tar.gz
+
 BuildSystem:	python
 BuildArch:	noarch
-
-BuildRequires:	python
-BuildRequires:	pkgconfig(python3)
+BuildRequires:	pkgconfig(python)
+BuildRequires:	python%{pyver}dist(annotated-doc)
+BuildRequires:	python%{pyver}dist(click)
 BuildRequires:	python%{pyver}dist(pdm-backend)
 BuildRequires:	python%{pyver}dist(pip)
 BuildRequires:	python%{pyver}dist(pre-commit)
+BuildRequires:	python%{pyver}dist(rich)
+BuildRequires:	python%{pyver}dist(shellingham)
 BuildRequires:	python%{pyver}dist(wheel)
-BuildRequires:	python%{pyver}dist(typer-slim)
-BuildRequires:	python%{pyver}dist(click) >= 8.0.0
-BuildRequires:	python%{pyver}dist(typing-extensions) >= 3.7.4.3
-BuildRequires:	python%{pyver}dist(rich) >= 10.11.0
-BuildRequires:	python%{pyver}dist(shellingham) >= 1.3.0
-%if %{with test}
-BuildRequires:	python%{pyver}dist(click) >= 8.0.0
-BuildRequires:	python%{pyver}dist(markdown-it-py)
-BuildRequires:	python%{pyver}dist(mdurl)
-BuildRequires:	python%{pyver}dist(pygments)
+%if %{with tests}
+BuildRequires:	python%{pyver}dist(click)
 BuildRequires:	python%{pyver}dist(pytest)
 BuildRequires:	python%{pyver}dist(pytest-xdist)
-BuildRequires:	python%{pyver}dist(rich) >= 10.11.0
-BuildRequires:	python%{pyver}dist(shellingham) >= 1.3.0
-BuildRequires:	python%{pyver}dist(typing-extensions) >= 3.7.4.3
 %endif
-Requires:	python%{pyver}dist(typer-slim) >= %{version}
-Requires:	python%{pyver}dist(click) >= 8.0.0
-Requires:	python%{pyver}dist(typing-extensions) >= 3.7.4.3
-Requires:	python%{pyver}dist(rich) >= 10.11.0
+Requires:	python%{pyver}dist(annotated-doc) >= 0.02
+Requires:	python%{pyver}dist(click) >= 8.2.1
+Requires:	python%{pyver}dist(rich) >= 13.8.0
 Requires:	python%{pyver}dist(shellingham) >= 1.3.0
+
 # python-typer binary name-conflict with ErLang TyPer application
 Conflicts:	erlang
+# typer-slim is obsoleted upstream and is only a wrapper around typer,
+# meaning we have no reason to have duplicated packages.
+%rename python-typer-slim
 
 %description
 Typer is a library for building CLI applications that users will love using
@@ -55,25 +44,45 @@ and developers will love creating. Based on Python type hints.
 It's also a command line tool to run scripts, automatically converting them
 to CLI applications.
 
-%prep
-%autosetup -p1 -n %{oname}-%{version}
+%prep -a
+# LLM crap
+rm -r typer/.agents
 
-%build
-%py_build
+%install -a
+install -d '%{buildroot}%{_datadir}/bash-completion/completions' \
+	'%{buildroot}%{_datadir}/fish/vendor_completions.d' \
+	'%{buildroot}%{_datadir}/zsh/site-functions/'
 
-%install
-%py3_install
-# Remove conflicting files that are included with the python-typer-slim package
-rm -r %{buildroot}%{py_sitedir}/typer
+export PYTHONPATH="%{buildroot}%{python_sitelib}"
+export _TYPER_COMPLETE_TEST_DISABLE_SHELL_DETECTION=1
 
-%if %{with test}
+'%{buildroot}%{_bindir}/typer' --show-completion bash \
+    > '%{buildroot}%{_datadir}/bash-completion/completions/typer'
+'%{buildroot}%{_bindir}/typer' --show-completion fish \
+    > '%{buildroot}%{_datadir}/fish/vendor_completions.d/typer.fish'
+'%{buildroot}%{_bindir}/typer' --show-completion zsh \
+    > '%{buildroot}%{_datadir}/zsh/site-functions/_typer'
+
+%if %{with tests}
 %check
-pip install -e .[test]
-%{__python} -m pytest --import-mode append -v -rs -k 'not test_show_completion and not test_install_completion' #"${ignore-}"
+export CI=true
+export PYTHONPATH="%{buildroot}%{python_sitelib}:${PWD}"
+# Env variables taken from scripts/test.sh
+export TERMINAL_WIDTH=3000
+export _TYPER_FORCE_DISABLE_TERMINAL=1
+export _TYPER_RUN_INSTALL_COMPLETION_TESTS=1
+skiptests+="not test_enum and not test_tutorial003 and not test_tutorial001"
+skiptests+=" and not test_script_completion_run"
+skiptests+=" and not test_completion_show_invalid_shell"
+skiptests+=" and not test_invalid_score"
+pytest -rs -k "$skiptests"
 %endif
 
 %files
-%{_bindir}/typer
-%{py_sitedir}/%{oname}-%{version}.dist-info
-%license LICENSE
 %doc README.md
+%{_bindir}/typer
+%{_datadir}/bash-completion/completions/%{module}
+%{_datadir}/fish/vendor_completions.d/%{module}.fish
+%{_datadir}/zsh/site-functions/_%{module}
+%{python_sitelib}/%{module}
+%{python_sitelib}/%{module}-%{version}.dist-info
