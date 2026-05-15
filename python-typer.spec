@@ -22,6 +22,7 @@ BuildRequires:	python%{pyver}dist(rich)
 BuildRequires:	python%{pyver}dist(shellingham)
 BuildRequires:	python%{pyver}dist(wheel)
 %if %{with tests}
+BuildRequires:	procps-ng
 BuildRequires:	python%{pyver}dist(click)
 BuildRequires:	python%{pyver}dist(pytest)
 BuildRequires:	python%{pyver}dist(pytest-xdist)
