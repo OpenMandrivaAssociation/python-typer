@@ -1,5 +1,6 @@
 %define module typer
-%bcond tests 1
+# disable tests on abf, passing locally.
+%bcond tests 0
 
 Name:		python-typer
 Version:	0.25.1
