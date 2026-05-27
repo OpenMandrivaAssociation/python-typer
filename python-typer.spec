@@ -1,9 +1,9 @@
 %define module typer
 # disable tests on abf, passing locally.
-%bcond tests 0
+%bcond tests 1
 
 Name:		python-typer
-Version:	0.25.1
+Version:	0.26.2
 Release:	1
 Summary:	Typer, build great CLIs. Easy to code. Based on Python type hints
 License:	MIT
@@ -15,7 +15,6 @@ BuildSystem:	python
 BuildArch:	noarch
 BuildRequires:	pkgconfig(python)
 BuildRequires:	python%{pyver}dist(annotated-doc)
-BuildRequires:	python%{pyver}dist(click)
 BuildRequires:	python%{pyver}dist(pdm-backend)
 BuildRequires:	python%{pyver}dist(pip)
 BuildRequires:	python%{pyver}dist(rich)
@@ -23,8 +22,8 @@ BuildRequires:	python%{pyver}dist(shellingham)
 BuildRequires:	python%{pyver}dist(wheel)
 %if %{with tests}
 BuildRequires:	procps-ng
-BuildRequires:	python%{pyver}dist(click)
 BuildRequires:	python%{pyver}dist(pytest)
+BuildRequires:	python%{pyver}dist(pytest-cov)
 BuildRequires:	python%{pyver}dist(pytest-xdist)
 %endif
 
@@ -43,7 +42,7 @@ to CLI applications.
 
 %prep -a
 # LLM crap
-rm -r typer/.agents
+rm -rf typer/.agents
 
 %install -a
 install -d '%{buildroot}%{_datadir}/bash-completion/completions' \
@@ -63,16 +62,15 @@ export _TYPER_COMPLETE_TEST_DISABLE_SHELL_DETECTION=1
 %if %{with tests}
 %check
 export CI=true
-export PYTHONPATH="%{buildroot}%{python_sitelib}:${PWD}"
+export PYTHONPATH="%{buildroot}%{python_sitelib}"
 # Env variables taken from scripts/test.sh
 export TERMINAL_WIDTH=3000
 export _TYPER_FORCE_DISABLE_TERMINAL=1
 export _TYPER_RUN_INSTALL_COMPLETION_TESTS=1
-skiptests+="not test_enum and not test_tutorial003 and not test_tutorial001"
-skiptests+=" and not test_script_completion_run"
-skiptests+=" and not test_completion_show_invalid_shell"
-skiptests+=" and not test_invalid_score and not test_cli"
-pytest -rs -k "$skiptests"
+# These cannot find the typer package because the tests override PYTHONPATH.
+ignore="${ignore-} --ignore=tests/test_tutorial/test_subcommands/test_tutorial001.py"
+ignore="${ignore-} --ignore=tests/test_tutorial/test_subcommands/test_tutorial003.py"
+pytest -rs --no-cov ${ignore}
 %endif
 
 %files
