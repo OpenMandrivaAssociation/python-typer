@@ -70,7 +70,9 @@ export _TYPER_RUN_INSTALL_COMPLETION_TESTS=1
 # These cannot find the typer package because the tests override PYTHONPATH.
 ignore="${ignore-} --ignore=tests/test_tutorial/test_subcommands/test_tutorial001.py"
 ignore="${ignore-} --ignore=tests/test_tutorial/test_subcommands/test_tutorial003.py"
-pytest -rs --no-cov ${ignore}
+# skip this test as it fails in isolated builds
+skiptests+="not test_binary_stderr"
+pytest -rs --no-cov ${ignore} -k "$skiptests"
 %endif
 
 %files
