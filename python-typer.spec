@@ -3,13 +3,14 @@
 %bcond tests 1
 
 Name:		python-typer
-Version:	0.26.6
+Version:	0.26.7
 Release:	1
 Summary:	Typer, build great CLIs. Easy to code. Based on Python type hints
 License:	MIT
 Group:		Development/Python
 URL:		https://github.com/fastapi/typer
 Source0:	%{URL}/archive/%{version}/%{name}-%{version}.tar.gz
+Source100:	%{name}.rpmlintrc
 
 BuildSystem:	python
 BuildArch:	noarch
@@ -59,6 +60,7 @@ export _TYPER_COMPLETE_TEST_DISABLE_SHELL_DETECTION=1
 '%{buildroot}%{_bindir}/typer' --show-completion zsh \
     > '%{buildroot}%{_datadir}/zsh/site-functions/_typer'
 
+
 %if %{with tests}
 %check
 export CI=true
@@ -77,7 +79,7 @@ pytest -rs --no-cov ${ignore} -k "$skiptests"
 
 %files
 %doc README.md
-%{_bindir}/typer
+%{_bindir}/%{module}
 %{_datadir}/bash-completion/completions/%{module}
 %{_datadir}/fish/vendor_completions.d/%{module}.fish
 %{_datadir}/zsh/site-functions/_%{module}
