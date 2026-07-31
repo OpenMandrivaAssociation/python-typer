@@ -3,7 +3,7 @@
 %bcond tests 1
 
 Name:		python-typer
-Version:	0.26.7
+Version:	0.27.0
 Release:	1
 Summary:	Typer, build great CLIs. Easy to code. Based on Python type hints
 License:	MIT
