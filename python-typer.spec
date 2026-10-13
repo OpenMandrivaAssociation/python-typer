@@ -1,10 +1,10 @@
 %define module typer
-# disable tests on abf, passing locally.
-%bcond tests 1
+# pytest-cov and pytest-xdist are not built for Python 3.15 yet.
+%bcond tests 0
 
 Name:		python-typer
 Version:	0.27.0
-Release:	1
+Release:	2
 Summary:	Typer, build great CLIs. Easy to code. Based on Python type hints
 License:	MIT
 Group:		Development/Python
@@ -14,7 +14,7 @@ Source100:	%{name}.rpmlintrc
 
 BuildSystem:	python
 BuildArch:	noarch
-BuildRequires:	pkgconfig(python)
+BuildRequires:	pkgconfig(python3)
 BuildRequires:	python%{pyver}dist(annotated-doc)
 BuildRequires:	python%{pyver}dist(pdm-backend)
 BuildRequires:	python%{pyver}dist(pip)
